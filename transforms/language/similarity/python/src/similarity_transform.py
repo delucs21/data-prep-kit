@@ -42,6 +42,10 @@ SHINGLE_SIZE_KEY = "shingle_size"
 SHINGLE_SIZE_CLI_PARAM = f"{cli_prefix}{SHINGLE_SIZE_KEY}"
 SHINGLE_SIZE_DEFAULT = 8
 
+RESULT_SIZE_KEY = "result_size"
+RESULT_SIZE_CLI_PARAM = f"{cli_prefix}{RESULT_SIZE_KEY}"
+RESULT_SIZE_DEFAULT = 1
+
 ANNOTATION_COLUMN_KEY = "annotation_column"
 ANNOTATION_COLUMN_CLI_PARAM = f"{cli_prefix}{ANNOTATION_COLUMN_KEY}"
 ANNOTATION_COLUMN_DEFAULT = "similarity_score"
@@ -94,6 +98,14 @@ PARAMS = [
         "required": False,
         "help": "Shingle size for query construction (default is 8)",
     },
+        {
+        "key": RESULT_SIZE_KEY,
+        "cli_param": RESULT_SIZE_CLI_PARAM,
+        "default": RESULT_SIZE_DEFAULT,
+        "type": int,
+        "required": False,
+        "help": "result size for matched sentences (default is 1)",
+    },
     {
         "key": ANNOTATION_COLUMN_KEY,
         "cli_param": ANNOTATION_COLUMN_CLI_PARAM,
@@ -134,9 +146,82 @@ class SimilarityTransform(AbstractTableTransform):
         self.es_pwd = config.get(ES_PWD_KEY, ES_PWD_DEFAULT)
         self.es_index = config.get(ES_INDEX_KEY, ES_INDEX_DEFAULT)
         self.shingle_size = config.get(SHINGLE_SIZE_KEY, SHINGLE_SIZE_DEFAULT)
+        self.result_size = config.get(RESULT_SIZE_KEY, RESULT_SIZE_DEFAULT)
         self.annotation_column = config.get(ANNOTATION_COLUMN_KEY, ANNOTATION_COLUMN_DEFAULT)
         self.doc_text_column = config.get(DOC_TEXT_COLUMN_KEY, DOC_TEXT_COLUMN_DEFAULT)
 
+
+
+    def _getNgramQuery(self, text):
+        slop = 2
+        context = self.shingle_size
+        document = text
+
+        # generate all possible shingles
+        s = []
+        spaces = [i for i,j in enumerate(document) if j==' ']
+        spaces.insert(0,0)
+        end = len(spaces) - context
+        if end > 0:
+            for c in range(0, end):
+                s.append( document[spaces[c]:spaces[c+context]].strip())
+            s.append( document[spaces[end]:len (document)].strip())
+        else:
+            s.append(document.strip())
+
+        # format them in elastic grammar
+        shingles = []
+        for ss in s:
+
+            shingles.append (
+                            {
+                                "match_phrase": {
+                                    "contents": {
+                                        "query": ss,
+                                        "slop": slop
+                                    }
+                                }
+                            })
+
+        # construct elastic query
+        query = {    
+        "size": self.result_size,
+        "_source": "false",
+        "fields":["_doc_id", "_fs_id", "title", "url"],
+        "query": {
+            "bool": {
+                "filter": {
+                    "exists": {
+                        "field": "contents"
+                    }
+                },
+                "must": [
+                    {
+                        "bool": {
+                            "should": shingles,
+                            "minimum_should_match": 1
+                        }
+                    }
+                ]
+            }
+        },
+        "highlight": {
+                    "pre_tags": [
+                ""
+            ],
+            "post_tags": [
+                ""
+            ],
+            "fields": {
+                "contents": {
+                                "order": "score",
+            "fragment_size": 0,
+            "number_of_fragments": 1}
+            }
+        }
+    }
+        return query
+    
 
     def transform(self, table: pa.Table, file_name: str = None) -> tuple[list[pa.Table], dict[str, Any]]:
         """
@@ -154,6 +239,8 @@ class SimilarityTransform(AbstractTableTransform):
         print("*"*100)
         print(f"Running similarity transfrom. \n{self.es_endpoint=} \n{self.es_userid=} \n{self.es_pwd=} \n{self.es_index=} \n{self.shingle_size=} \n{self.annotation_column=} \n{self.doc_text_column=}")
         print("*"*100)
+        q = self._getNgramQuery("this is a random sentence to test if everything works")
+        print(f"My query details: \n{q}")
 
 
 
