@@ -186,8 +186,8 @@ class SimilarityTransform(AbstractTableTransform):
         # construct elastic query
         query = {    
         "size": self.result_size,
-        "_source": "false",
-        "fields":["_doc_id", "_fs_id", "title", "url"],
+        # "_source": "false",
+        # "fields":["_doc_id", "_fs_id", "title", "url"],
         "query": {
             "bool": {
                 "filter": {
@@ -239,10 +239,8 @@ class SimilarityTransform(AbstractTableTransform):
         print("*"*100)
         print(f"Running similarity transfrom. \n{self.es_endpoint=} \n{self.es_userid=} \n{self.es_pwd=} \n{self.es_index=} \n{self.shingle_size=} \n{self.annotation_column=} \n{self.doc_text_column=}")
         print("*"*100)
-        q = self._getNgramQuery("this is a random sentence to test if everything works")
+        q = self._getNgramQuery("Jane Harding, a fellow member of the club, said she has received about a 10 percent increase in calls since Tuesday, and some of the other breeders she knows also have reported more calls.")
         print(f"My query details: \n{q}")
-
-
 
         # Add some sample metadata.
         self.logger.debug(f"Transformed one table with {len(table)} rows")
