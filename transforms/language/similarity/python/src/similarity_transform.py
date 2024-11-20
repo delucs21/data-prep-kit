@@ -18,6 +18,8 @@ import pyarrow as pa
 from data_processing.transform import AbstractTableTransform, TransformConfiguration
 from data_processing.utils import CLIArgumentProvider
 
+import requests
+from requests.auth import HTTPBasicAuth 
 
 short_name = "similarity"
 cli_prefix = f"{short_name}_"
@@ -151,6 +153,33 @@ class SimilarityTransform(AbstractTableTransform):
         self.doc_text_column = config.get(DOC_TEXT_COLUMN_KEY, DOC_TEXT_COLUMN_DEFAULT)
 
 
+    def _testElasticFuncioning(self):   
+        url=self.es_endpoint 
+        headers = {'Content-Type': 'application/json'}
+        res = requests.get(url=url, headers=headers, auth = HTTPBasicAuth(self.es_userid, self.es_pwd), verify=False)
+
+        if res.status_code != 200:
+            print(f"ERROR: {res.text}")
+            return False
+        return True
+
+
+# TODO this needs to be adjusted to iterate on result_size
+    def _excecuteQuery(self, query):
+        if self._testElasticFuncioning():
+            r = requests.post(url=self.es_endpoint, json=query, auth = HTTPBasicAuth(self.es_userid, self.es_pwd), verify=False)
+            q = r.json()
+            res = []
+            # try:
+            for d in q["hits"]["hits"]:
+                ddd = {"id":d["fields"]["_id"][0],"index":d["fields"]["_index"][0], "score" :d["_score"]}
+                ddd["contents"] = d["highlight"]["contents"]
+                res.append(ddd)
+            # except Exception as ex:
+            #     print(ex)
+            return res
+        return None
+
 
     def _getNgramQuery(self, text):
         slop = 2
@@ -187,7 +216,7 @@ class SimilarityTransform(AbstractTableTransform):
         query = {    
         "size": self.result_size,
         # "_source": "false",
-        # "fields":["_doc_id", "_fs_id", "title", "url"],
+        "fields":["_id", "_index", "_score"],
         "query": {
             "bool": {
                 "filter": {
@@ -240,7 +269,9 @@ class SimilarityTransform(AbstractTableTransform):
         print(f"Running similarity transfrom. \n{self.es_endpoint=} \n{self.es_userid=} \n{self.es_pwd=} \n{self.es_index=} \n{self.shingle_size=} \n{self.annotation_column=} \n{self.doc_text_column=}")
         print("*"*100)
         q = self._getNgramQuery("Jane Harding, a fellow member of the club, said she has received about a 10 percent increase in calls since Tuesday, and some of the other breeders she knows also have reported more calls.")
-        print(f"My query details: \n{q}")
+        r = self._excecuteQuery(q)
+        print(f"Query details: \n{q}")
+        print(f"Query results: \n{r}")
 
         # Add some sample metadata.
         self.logger.debug(f"Transformed one table with {len(table)} rows")
