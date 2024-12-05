@@ -16,7 +16,7 @@ from typing import Any
 
 import pyarrow as pa
 from data_processing.transform import AbstractTableTransform, TransformConfiguration
-from data_processing.utils import CLIArgumentProvider
+from data_processing.utils import CLIArgumentProvider, TransformUtils
 
 import requests
 from requests.auth import HTTPBasicAuth 
@@ -256,26 +256,30 @@ class SimilarityTransform(AbstractTableTransform):
         """
         Put Transform-specific to convert one Table to 0 or more tables. It also returns
         a dictionary of execution statistics - arbitrary dictionary
-        This implementation makes no modifications so effectively implements a copy of the
-        input parquet to the output folder, without modification.
         """
         self.logger.debug(f"Transforming one table with {len(table)} rows")
 
+        # make sure that the table contains doc_text_column column
+        TransformUtils.validate_columns(table=table, required=[self.doc_text_column])
+        self.df = table.to_pandas()
+        result_list = []
+        
+        for i in range(len(self.df)):
+            q = self._getNgramQuery(self.df.iloc[i][self.doc_text_column])
+            r = self._excecuteQuery(q)
+            result_list.append(r)
+            
 
-        #################
-        # DO STUFF HERE #
-        #################
-        print("*"*100)
-        print(f"Running similarity transfrom. \n{self.es_endpoint=} \n{self.es_userid=} \n{self.es_pwd=} \n{self.es_index=} \n{self.shingle_size=} \n{self.annotation_column=} \n{self.doc_text_column=}")
-        print("*"*100)
-        q = self._getNgramQuery("Jane Harding, a fellow member of the club, said she has received about a 10 percent increase in calls since Tuesday, and some of the other breeders she knows also have reported more calls.")
-        r = self._excecuteQuery(q)
-        print(f"Query details: \n{q}")
-        print(f"Query results: \n{r}")
+        assert len(self.df) == len(result_list), "The number of rows in the dataframe does not match the number of elements in result_list."
+        
+        self.df[self.annotation_column] = result_list
+        print(self.df)
+        
+        table = pa.Table.from_pandas(self.df)
+        metadata = {}
 
-        # Add some sample metadata.
         self.logger.debug(f"Transformed one table with {len(table)} rows")
-        metadata = {"nfiles": 1, "nrows": len(table)}
+        metadata = {"nrows": len(table)}
         return [table], metadata
 
 
