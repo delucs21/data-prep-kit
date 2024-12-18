@@ -35,11 +35,12 @@ params = {
 }
 
 similarity_params = {
-    "similarity_es_endpoint": 'add-endpoint-here',
+    "similarity_es_endpoint": None,
     "similarity_es_index": "mydata",
     "similarity_annotation_column": "similarity_score",
     "similarity_doc_text_column": "contents"
 }
+
 
 if __name__ == "__main__":
     # Set the simulated command line args

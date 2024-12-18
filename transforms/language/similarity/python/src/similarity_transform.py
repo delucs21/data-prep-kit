@@ -12,6 +12,8 @@
 
 import time
 from argparse import ArgumentParser, Namespace
+import json
+import os
 from typing import Any
 
 import pyarrow as pa
@@ -152,6 +154,10 @@ class SimilarityTransform(AbstractTableTransform):
         self.annotation_column = config.get(ANNOTATION_COLUMN_KEY, ANNOTATION_COLUMN_DEFAULT)
         self.doc_text_column = config.get(DOC_TEXT_COLUMN_KEY, DOC_TEXT_COLUMN_DEFAULT)
 
+        # Ensure es_endpoint includes '_search' path
+        if isinstance(self.es_endpoint, str) and not self.es_endpoint.endswith("_search"):
+            self.es_endpoint = f"{self.es_endpoint.rstrip('/')}/_search"
+
 
     def _testElasticFuncioning(self):   
         url=self.es_endpoint 
@@ -263,20 +269,28 @@ class SimilarityTransform(AbstractTableTransform):
         TransformUtils.validate_columns(table=table, required=[self.doc_text_column])
         self.df = table.to_pandas()
         result_list = []
-        
-        for i in range(len(self.df)):
-            q = self._getNgramQuery(self.df.iloc[i][self.doc_text_column])
-            r = self._excecuteQuery(q)
-            result_list.append(r)
-            
+
+        if self.es_endpoint is not None:
+            for i in range(len(self.df)):
+                q = self._getNgramQuery(self.df.iloc[i][self.doc_text_column])
+                r = self._excecuteQuery(q)
+                result_list.append(r)
+        else:
+            # local-only processing, so load response from file instead of hitting Elasticsearch
+            json_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data", "result_list.json")
+            with open(json_file_path, "r") as f:
+                result_list = json.load(f)
+
 
         assert len(self.df) == len(result_list), "The number of rows in the dataframe does not match the number of elements in result_list."
+
+        
+        
         
         self.df[self.annotation_column] = result_list
         print(self.df)
         
         table = pa.Table.from_pandas(self.df)
-        metadata = {}
 
         self.logger.debug(f"Transformed one table with {len(table)} rows")
         metadata = {"nrows": len(table)}
@@ -338,5 +352,6 @@ class SimilarityTransformConfiguration(TransformConfiguration):
             return False
 
         self.params = self.params | captured
-        self.logger.info(f"{short_name} parameters are : {self.params}")
+        params_to_print = {k:v for k,v in self.params.items() if k != 'es_pwd'}
+        self.logger.info(f"{short_name} parameters are : {params_to_print}")
         return True
