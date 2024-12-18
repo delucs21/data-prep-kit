@@ -37,7 +37,7 @@ class TestSimilarityTransform(AbstractTableTransformTest):
         input_tables = get_tables_in_folder(input_dir)
         expected_tables = get_tables_in_folder(expected_dir)
         expected_metadata_list = [{"nfiles": 1, "nrows": 7}, {}]
-        config = {ES_ENDPOINT_KEY: "es-endpoint-here", ES_INDEX_KEY: "mydata"}
+        config = {ES_ENDPOINT_KEY: None, ES_INDEX_KEY: "mydata"}
         fixtures = [
             (SimilarityTransform(config), input_tables, expected_tables, expected_metadata_list),
         ]

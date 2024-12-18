@@ -33,7 +33,7 @@ class TestPythonSimilarityTransform(AbstractTransformLauncherTest):
         launcher = PythonTransformLauncher(SimilarityPythonTransformConfiguration())
         input_dir = os.path.join(src_file_dir, "../test-data/input")
         expected_dir = os.path.join(src_file_dir, "../test-data/expected")
-        transform_config = {ES_ENDPOINT_CLI_PARAM: "test-endpoint"}
+        transform_config = {ES_ENDPOINT_CLI_PARAM: None}
         fixtures.append(
             (
                 launcher,
