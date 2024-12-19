@@ -17,7 +17,7 @@ from data_processing.test_support.transform.table_transform_test import (
     AbstractTableTransformTest,
 )
 # from noop_transform import NOOPTransform, sleep_key
-from similarity_transform import SimilarityTransform, ES_ENDPOINT_KEY, ES_INDEX_KEY
+from similarity_transform import SimilarityTransform, ES_ENDPOINT_KEY
 
 table = pa.Table.from_pydict({"name": pa.array(["Tom"]), "age": pa.array([23])})
 expected_table = table  # We're a noop after all.
@@ -37,7 +37,7 @@ class TestSimilarityTransform(AbstractTableTransformTest):
         input_tables = get_tables_in_folder(input_dir)
         expected_tables = get_tables_in_folder(expected_dir)
         expected_metadata_list = [{"nfiles": 1, "nrows": 7}, {}]
-        config = {ES_ENDPOINT_KEY: None, ES_INDEX_KEY: "mydata"}
+        config = {ES_ENDPOINT_KEY: None}
         fixtures = [
             (SimilarityTransform(config), input_tables, expected_tables, expected_metadata_list),
         ]

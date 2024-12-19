@@ -166,7 +166,6 @@ class SimilarityTransform(AbstractTableTransform):
         return True
 
 
-# TODO this needs to be adjusted to iterate on result_size
     def _excecuteQuery(self, query):
         if self._testElasticFuncioning():
             r = requests.post(url=f"{self.es_endpoint.rstrip('/')}/_search", json=query, auth = HTTPBasicAuth(self.es_userid, self.es_pwd), verify=False)
@@ -346,6 +345,10 @@ class SimilarityTransformConfiguration(TransformConfiguration):
         except (ValueError, TypeError):
             print(f"Parameter '--{SHINGLE_SIZE_CLI_PARAM}' should be an integer greater than 0. You specified '{shingle_size_value}'.")
             return False
+
+        # Set endpoint to None if the input is empty or "None" (as a string)
+        if captured.get('es_endpoint') == "None" or (isinstance(captured.get('es_endpoint'), str) and lencaptured.get('es_endpoint') == 0):
+            captured['es_endpoint'] = None
 
         self.params = self.params | captured
         params_to_print = {k:v for k,v in self.params.items() if k != 'es_pwd'}
