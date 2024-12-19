@@ -154,10 +154,6 @@ class SimilarityTransform(AbstractTableTransform):
         self.annotation_column = config.get(ANNOTATION_COLUMN_KEY, ANNOTATION_COLUMN_DEFAULT)
         self.doc_text_column = config.get(DOC_TEXT_COLUMN_KEY, DOC_TEXT_COLUMN_DEFAULT)
 
-        # Ensure es_endpoint includes '_search' path
-        if isinstance(self.es_endpoint, str) and not self.es_endpoint.endswith("_search"):
-            self.es_endpoint = f"{self.es_endpoint.rstrip('/')}/_search"
-
 
     def _testElasticFuncioning(self):   
         url=self.es_endpoint 
@@ -173,7 +169,7 @@ class SimilarityTransform(AbstractTableTransform):
 # TODO this needs to be adjusted to iterate on result_size
     def _excecuteQuery(self, query):
         if self._testElasticFuncioning():
-            r = requests.post(url=self.es_endpoint, json=query, auth = HTTPBasicAuth(self.es_userid, self.es_pwd), verify=False)
+            r = requests.post(url=f"{self.es_endpoint.rstrip('/')}/_search", json=query, auth = HTTPBasicAuth(self.es_userid, self.es_pwd), verify=False)
             q = r.json()
             res = []
             # try:
