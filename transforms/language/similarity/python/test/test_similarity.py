@@ -16,12 +16,11 @@ from data_processing.test_support import get_tables_in_folder
 from data_processing.test_support.transform.table_transform_test import (
     AbstractTableTransformTest,
 )
-# from noop_transform import NOOPTransform, sleep_key
 from similarity_transform import SimilarityTransform, ES_ENDPOINT_KEY
 
-table = pa.Table.from_pydict({"name": pa.array(["Tom"]), "age": pa.array([23])})
-expected_table = table  # We're a noop after all.
-expected_metadata_list = [{"nfiles": 1, "nrows": 1}, {}]  # transform() result  # flush() result
+# table = pa.Table.from_pydict({"name": pa.array(["Tom"]), "age": pa.array([23])})
+# expected_table = table
+# expected_metadata_list = [{"nfiles": 1, "nrows": 1}, {}]  # transform() result  # flush() result
 
 
 class TestSimilarityTransform(AbstractTableTransformTest):
