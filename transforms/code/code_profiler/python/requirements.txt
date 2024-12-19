@@ -1,4 +1,4 @@
-data-prep-toolkit>=0.2.3.dev0
+data-prep-toolkit>=0.2.3
 parameterized
 pandas
 aiolimiter==1.1.0
@@ -52,7 +52,7 @@ packaging==24.0
 pandas==2.2.2
 parso==0.8.4
 pexpect==4.9.0
-pillow==10.3.0
+pillow>=10.3.0
 platformdirs==4.2.2
 prompt_toolkit==3.0.45
 protobuf==5.27.2
@@ -96,3 +96,4 @@ urllib3==2.2.2
 uuid
 wcwidth==0.2.13
 wrapt==1.16.0
+plotly==5.15.0
