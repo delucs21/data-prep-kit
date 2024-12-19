@@ -347,7 +347,7 @@ class SimilarityTransformConfiguration(TransformConfiguration):
             return False
 
         # Set endpoint to None if the input is empty or "None" (as a string)
-        if captured.get('es_endpoint') == "None" or (isinstance(captured.get('es_endpoint'), str) and lencaptured.get('es_endpoint') == 0):
+        if captured.get('es_endpoint') == "None" or (isinstance(captured.get('es_endpoint'), str) and len(captured.get('es_endpoint')) == 0):
             captured['es_endpoint'] = None
 
         self.params = self.params | captured

@@ -36,7 +36,7 @@ class TestSimilarityTransform(AbstractTableTransformTest):
         expected_dir = os.path.join(src_file_dir, "../test-data/expected")
         input_tables = get_tables_in_folder(input_dir)
         expected_tables = get_tables_in_folder(expected_dir)
-        expected_metadata_list = [{"nfiles": 1, "nrows": 7}, {}]
+        expected_metadata_list = [{"nrows": 8}, {}]
         config = {ES_ENDPOINT_KEY: None}
         fixtures = [
             (SimilarityTransform(config), input_tables, expected_tables, expected_metadata_list),
