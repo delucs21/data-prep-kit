@@ -11,4 +11,4 @@ the following runtimes are available:
 
 
 ## Summary
-This transform annotates documents with similar sentences found in a target document collection.
+This transform annotates documents with similar sentences found in a target document collection within Elasticsearch.
