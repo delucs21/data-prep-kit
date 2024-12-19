@@ -16,7 +16,7 @@ The Similarity Transorm relies on a running [ElasticSearch](https://www.elastic.
 
 ### Input files
 
-This transform supports the input of [parquet files] (https://parquet.apache.org/) that contain a single column, called "contents",
+This transform supports the input of [parquet files](https://parquet.apache.org/) that contain a single column, called "contents",
 where each row is a a string that will be searched for in a target document collection.
 The document collection is specified with configuration parameters.
 

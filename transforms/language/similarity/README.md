@@ -6,14 +6,8 @@ These can be later used in subsequent operations, per the set of
 [transform project conventions](../../README.md#transform-project-conventions)
 the following runtimes are available:
 
-* [pythom](python/README.md) - enables the running of the base python transformation
+* [python](python/README.md) - enables the running of the base python transformation
   in a Python runtime
-* [ray](ray/README.md) - enables the running of the base python transformation
-  in a Ray runtime
-* [spark](spark/README.md) - enables the running of a spark-based transformation
-in a Spark runtime. 
-* [kfp](kfp_ray/README.md) - enables running the ray docker image 
-in a kubernetes cluster using a generated `yaml` file.
 
 
 ## Summary
