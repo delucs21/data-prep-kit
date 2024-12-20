@@ -9,6 +9,5 @@ the following runtimes are available:
 * [python](python/README.md) - enables the running of the base python transformation
   in a Python runtime
 
-
 ## Summary
 This transform annotates documents with similar sentences found in a target document collection within Elasticsearch.
